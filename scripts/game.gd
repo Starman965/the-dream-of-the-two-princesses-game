@@ -8,15 +8,15 @@ const STORY := [
 		"title": "The Magic Mirror",
 		"body": "Emily wakes up and Audrey is gone. Something golden sparkles on the floor.",
 		"task": "Tap the magic mirror.",
-		"target": Rect2(536, 456, 190, 160),
+		"target": Rect2(1044, 390, 176, 184),
 		"done": "The mirror shimmers. WHOOSH! Emily is swept into a magical land."
 	},
 	{
 		"image": "res://assets/art/meadow_castle.png",
 		"title": "Friends on the Path",
 		"body": "The bear, donkey, and rabbit tell Emily that Audrey is locked in the tower.",
-		"task": "Tap the castle path to begin the rescue.",
-		"target": Rect2(842, 170, 265, 240),
+		"task": "Tap the castle gate to begin the rescue.",
+		"target": Rect2(846, 198, 242, 218),
 		"done": "Emily holds the mirror close and turns bravely toward the Great Forest."
 	},
 	{
@@ -24,7 +24,7 @@ const STORY := [
 		"title": "The Golden Key",
 		"body": "The witch is sleeping. The key to the dragons' cave is nearby.",
 		"task": "Tap the golden key before the floorboard creaks.",
-		"target": Rect2(552, 352, 220, 180),
+		"target": Rect2(642, 392, 146, 142),
 		"done": "Emily grabs the key and runs back to her friends."
 	},
 	{
@@ -32,15 +32,15 @@ const STORY := [
 		"title": "Wake the Dragons",
 		"body": "Jax and Lily sleep inside a cave filled with glowing crystals.",
 		"task": "Tap the dragons to wake them.",
-		"target": Rect2(332, 178, 610, 355),
+		"target": Rect2(252, 118, 860, 390),
 		"done": "The dragons open their kind eyes. They are ready to fly to Audrey."
 	},
 	{
-		"image": "res://assets/art/dragon_cave.png",
+		"image": "res://assets/art/sisters_reunited.png",
 		"title": "Audrey Is Safe",
-		"body": "Emily and Audrey fly into the stars with Jax and Lily. When morning comes, the sisters are back in bed.",
-		"task": "Tap the mirror mark to play again.",
-		"target": Rect2(550, 496, 180, 150),
+		"body": "After the dragon lands at the castle, Emily and Audrey are together again.",
+		"task": "Press Play Again when you are ready.",
+		"target": Rect2(350, 112, 542, 520),
 		"done": "Maybe it was not a dream after all."
 	}
 ]
@@ -201,6 +201,10 @@ func _load_story_scene(index: int) -> void:
 	action_button.text = "Keep Going"
 	action_button.disabled = true
 	target_button.visible = true
+	if current_scene == STORY.size() - 1:
+		action_button.text = "Play Again"
+		action_button.disabled = false
+		target_button.visible = false
 	_place_target(scene["target"])
 	progress_label.text = "Chapter %d of %d" % [current_scene + 1, STORY.size()]
 
