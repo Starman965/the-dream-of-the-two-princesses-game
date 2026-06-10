@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { BASE_SIZE, STORY } from './gameData'
 import {
+  fadeOutActiveSound,
   fadeOutBackgroundSound,
   playAmbientSoundSet,
   playBackgroundSound,
@@ -104,7 +105,7 @@ function App() {
   const [fadeTransitionActive, setFadeTransitionActive] = useState(false)
   const [fadeBlackHandoffActive, setFadeBlackHandoffActive] = useState(false)
   const [fadeBlackSlowActive, setFadeBlackSlowActive] = useState(false)
-  const [fadeBlackSlowDurationMs, setFadeBlackSlowDurationMs] = useState(6000)
+  const [fadeBlackSlowDurationMs, setFadeBlackSlowDurationMs] = useState(4000)
   const [videoTransitionActive, setVideoTransitionActive] = useState(false)
   const [activeVideoId, setActiveVideoId] = useState(null)
   const [sequenceLocked, setSequenceLocked] = useState(false)
@@ -119,11 +120,15 @@ function App() {
   const sceneVideoRef = useRef(null)
   const advancingFromVideo = useRef(false)
   const videoPurpose = useRef(null)
+  const tapVideoAudioStarted = useRef(false)
+  const carriedTapAudioActive = useRef(false)
 
   const scene = STORY[currentScene]
   const sequenceTarget = scene.targetSequence?.[targetStep]
   const activeTarget = sequenceTarget?.target ?? scene.target
   const isMenuScene = Boolean(scene.isMenu)
+  const isEndScreen = Boolean(scene.isEndScreen)
+  const isTitleCardScene = isMenuScene || isEndScreen
   const isFinalScene = currentScene === STORY.length - 1
   const hasMapAccess = Boolean(scene.mapAccess)
   const requiresTap = Boolean(activeTarget) || (hasMapAccess && !solved)
@@ -184,8 +189,17 @@ function App() {
     }
   }, [currentScene])
 
+  function stopCarriedTapAudio() {
+    carriedTapAudioActive.current = false
+    stopActiveSound()
+  }
+
   function loadScene(index, { playIntro = true } = {}) {
     const nextScene = STORY[index]
+
+    if (!nextScene.inheritsCarriedTapAudio && carriedTapAudioActive.current) {
+      stopCarriedTapAudio()
+    }
 
     setCurrentScene(index)
     setSolved(false)
@@ -194,6 +208,7 @@ function App() {
     setMapPuzzleHint('')
     setMapOpen(false)
     setKenBurns(null)
+    resetTapVideoAudio()
 
     if (playIntro && nextScene.introVideo && STORY_VIDEOS[nextScene.introVideo]) {
       videoPurpose.current = 'intro'
@@ -211,9 +226,36 @@ function App() {
     playStorySound(audioId, options)
   }
 
+  function resetTapVideoAudio() {
+    tapVideoAudioStarted.current = false
+  }
+
+  function startTapVideoAudio() {
+    if (!scene.tapAudio || tapVideoAudioStarted.current) {
+      return
+    }
+
+    tapVideoAudioStarted.current = true
+    playStoryAudio(scene.tapAudio, {
+      persistent: true,
+      volume: scene.tapAudioVolume ?? 0.9,
+    })
+
+    if (scene.tapAudioCarryToNextScene) {
+      carriedTapAudioActive.current = true
+    }
+  }
+
   function handleTargetPress() {
     if (solved || isFinalScene || !requiresTap || transitionActive || sequenceLocked) {
       return
+    }
+
+    if (scene.fadeCarriedTapAudioOnTap && carriedTapAudioActive.current) {
+      fadeOutActiveSound(scene.fadeCarriedTapAudioMs ?? 2500)
+      carriedTapAudioActive.current = false
+    } else if (scene.stopCarriedTapAudioOnTap && carriedTapAudioActive.current) {
+      stopCarriedTapAudio()
     }
 
     if (sequenceTarget) {
@@ -376,6 +418,20 @@ function App() {
         }, scene.advanceDelay)
 
         transitionTimers.current = [advanceTimer]
+        return
+      }
+
+      if (scene.advanceTransition === 'fadeToBlack') {
+        setSequenceLocked(true)
+        startFadeToBlackHandoff(() => {
+          loadScene(currentScene + 1)
+        })
+        return
+      }
+
+      if (scene.advanceTransition === 'dissolve') {
+        setSequenceLocked(true)
+        startDissolveTransition({ duration: scene.transitionDuration })
         return
       }
 
@@ -586,8 +642,14 @@ function App() {
     }
 
     if (scene.backgroundAudio || scene.backgroundAudioSet) {
-      stopBackgroundSound()
+      if (scene.backgroundFadeOutMs) {
+        fadeOutBackgroundSound(scene.backgroundFadeOutMs)
+      } else {
+        stopBackgroundSound()
+      }
     }
+
+    startTapVideoAudio()
 
     videoPurpose.current = 'tap'
     advancingFromVideo.current = false
@@ -601,8 +663,24 @@ function App() {
       cutsceneVideoRef.current.currentTime = 0
     }
 
+    if (!carriedTapAudioActive.current) {
+      stopActiveSound()
+    }
+
+    resetTapVideoAudio()
     setVideoTransitionActive(false)
     setActiveVideoId(null)
+  }
+
+  function handleCutscenePlaying() {
+    if (
+      activeVideoId !== scene.tapVideo &&
+      activeVideoId !== scene.actionVideo
+    ) {
+      return
+    }
+
+    startTapVideoAudio()
   }
 
   function startDissolveHandoff(onReveal) {
@@ -635,7 +713,7 @@ function App() {
     transitionTimers.current = [revealTimer, finishTimer]
   }
 
-  function startSlowFadeToBlack(onComplete, duration = 6000) {
+  function startSlowFadeToBlack(onComplete, duration = 4000) {
     setFadeBlackSlowDurationMs(duration)
     setFadeBlackSlowActive(true)
 
@@ -768,7 +846,7 @@ function App() {
     if (isFinalScene) {
       startSlowFadeToBlack(() => {
         loadScene(0)
-      }, scene.finishFadeDuration ?? 6000)
+      }, scene.finishFadeDuration ?? 4000)
       return
     }
 
@@ -931,7 +1009,7 @@ function App() {
         {fadeBlackSlowActive && (
           <div
             className="fade-black-slow"
-            style={{ animationDuration: `${fadeBlackSlowDurationMs}ms` }}
+            style={{ '--fade-black-slow-duration': `${fadeBlackSlowDurationMs}ms` }}
             aria-hidden="true"
           />
         )}
@@ -943,6 +1021,12 @@ function App() {
               className="cutscene-video"
               src={STORY_VIDEOS[activeVideoId]}
               playsInline
+              muted={
+                Boolean(scene.tapVideoMuted) ||
+                (Boolean(scene.tapAudio) &&
+                  (activeVideoId === scene.tapVideo || activeVideoId === scene.actionVideo))
+              }
+              onPlaying={handleCutscenePlaying}
               onEnded={finishVideoTransition}
             />
             <div className="cutscene-shade" aria-hidden="true" />
@@ -957,7 +1041,7 @@ function App() {
           !fadeBlackSlowActive && (
           <article
             className={`story-panel${
-              isMenuScene ? ' story-panel-menu' : ''
+              isTitleCardScene ? ' story-panel-menu' : ''
             }${scene.panelPosition ? ` story-panel-${scene.panelPosition}` : ''}`}
           >
             <h1>{scene.title}</h1>
@@ -1039,15 +1123,17 @@ function App() {
         {!advancesOnTap && (
           <button
             type="button"
-            className={`action-button${isMenuScene ? ' action-button-menu' : ''}`}
+            className={`action-button${isTitleCardScene ? ' action-button-menu' : ''}`}
             disabled={actionDisabled}
             onClick={handleActionPress}
           >
             {isMenuScene
               ? 'Start Story'
-              : isFinalScene
-                ? 'Finish'
-                : (scene.actionLabel ?? 'Keep Going')}
+              : isEndScreen
+                ? 'Play Again'
+                : isFinalScene
+                  ? 'Finish'
+                  : (scene.actionLabel ?? 'Keep Going')}
           </button>
         )}
 

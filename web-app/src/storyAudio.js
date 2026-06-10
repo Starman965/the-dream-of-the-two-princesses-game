@@ -18,6 +18,7 @@ import dragonSleep1 from './assets/audio/dragon_sleep_1.mp3?url'
 import dragonSleep2 from './assets/audio/dragon_sleep_2.mp3?url'
 import dragonSleep3 from './assets/audio/dragon_sleep_3.mp3?url'
 import menuMusic from './assets/audio/menu_music.mp3?url'
+import audreyReunionMusic from './assets/audio/audrey_reunion_music.mp3?url'
 
 export const STORY_AUDIO = {
   lampOff: lampOffDream,
@@ -40,11 +41,13 @@ export const STORY_AUDIO = {
   dragonSleep2,
   dragonSleep3,
   menuMusic,
+  audreyReunionMusic,
 }
 
 let activeSound = null
 let backgroundSound = null
 let backgroundFadeInterval = null
+let activeSoundFadeInterval = null
 let ambientTimeout = null
 let ambientEndedHandler = null
 
@@ -60,20 +63,56 @@ export function playStorySound(audioId, options = {}) {
     }
 
     activeSound = new Audio(src)
+    activeSound.volume = options.volume ?? 1
     activeSound.play().catch(() => {})
     return activeSound
   }
 
   const sound = new Audio(src)
+  sound.volume = options.volume ?? 1
   sound.play().catch(() => {})
   return sound
 }
 
 export function stopActiveSound() {
+  if (activeSoundFadeInterval) {
+    clearInterval(activeSoundFadeInterval)
+    activeSoundFadeInterval = null
+  }
+
   if (activeSound) {
     activeSound.pause()
     activeSound = null
   }
+}
+
+export function fadeOutActiveSound(durationMs = 2000) {
+  if (!activeSound) {
+    return
+  }
+
+  const sound = activeSound
+  const startVolume = sound.volume
+  const startTime = performance.now()
+
+  if (activeSoundFadeInterval) {
+    clearInterval(activeSoundFadeInterval)
+  }
+
+  activeSoundFadeInterval = setInterval(() => {
+    const elapsed = performance.now() - startTime
+    const progress = Math.min(elapsed / durationMs, 1)
+    sound.volume = startVolume * (1 - progress)
+
+    if (progress >= 1) {
+      clearInterval(activeSoundFadeInterval)
+      activeSoundFadeInterval = null
+      sound.pause()
+      if (activeSound === sound) {
+        activeSound = null
+      }
+    }
+  }, 50)
 }
 
 function clearAmbientPlayback() {

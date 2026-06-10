@@ -610,7 +610,7 @@
   background: #000;
   pointer-events: none;
   opacity: 0;
-  animation: fadeToBlackSlow ease-in forwards;
+  animation: fadeToBlackSlow var(--fade-black-slow-duration, 4s) ease-in forwards;
 }
 
 @keyframes fadeToBlackSlow {
