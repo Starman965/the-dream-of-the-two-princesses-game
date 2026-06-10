@@ -1,5 +1,7 @@
 .game-shell {
   min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
   background: #131723;
   color: #f7f7fb;
 }
@@ -7,6 +9,7 @@
 .stage {
   position: relative;
   min-height: 100svh;
+  height: 100svh;
   overflow: hidden;
   isolation: isolate;
 }
@@ -1173,6 +1176,104 @@
 
   100% {
     opacity: 0;
+  }
+}
+
+/* iPad / tablet landscape: fit full 16:9 scene instead of cropping sides */
+@media (orientation: landscape) and (pointer: coarse) and (min-width: 768px) and (max-height: 1100px) {
+  .stage {
+    --artboard-height: min(100svh, calc(100vw * 9 / 16));
+    --artboard-width: min(100vw, calc(100svh * 16 / 9));
+    --letterbox-inset-y: calc((100svh - var(--artboard-height)) / 2);
+    --letterbox-inset-x: calc((100vw - var(--artboard-width)) / 2);
+    --ui-safe-top: calc(var(--letterbox-inset-y) + env(safe-area-inset-top, 0px) + 14px);
+    --ui-safe-bottom: calc(var(--letterbox-inset-y) + env(safe-area-inset-bottom, 0px) + 14px);
+    --ui-safe-left: calc(var(--letterbox-inset-x) + env(safe-area-inset-left, 0px) + 16px);
+    --ui-safe-right: calc(var(--letterbox-inset-x) + env(safe-area-inset-right, 0px) + 16px);
+  }
+
+  .artboard {
+    width: var(--artboard-width);
+    height: var(--artboard-height);
+  }
+
+  .story-panel {
+    left: var(--ui-safe-left);
+    right: var(--ui-safe-right);
+    top: var(--ui-safe-top);
+    max-height: min(28svh, 220px);
+  }
+
+  .story-panel-top-right {
+    left: var(--ui-safe-left);
+    right: var(--ui-safe-right);
+    top: var(--ui-safe-top);
+  }
+
+  .story-panel-lower-right-third {
+    left: var(--ui-safe-left);
+    right: var(--ui-safe-right);
+    bottom: calc(var(--letterbox-inset-y) + 24svh);
+  }
+
+  .story-panel-bottom-left,
+  .story-panel-bottom-right {
+    left: var(--ui-safe-left);
+    right: var(--ui-safe-right);
+    bottom: var(--ui-safe-bottom);
+  }
+
+  .story-panel-menu {
+    left: 50%;
+    right: auto;
+    top: calc(var(--letterbox-inset-y) + 12svh);
+    width: min(720px, calc(var(--artboard-width) - 32px));
+  }
+
+  .action-button {
+    right: var(--ui-safe-right);
+    bottom: var(--ui-safe-bottom);
+    width: min(340px, calc(var(--artboard-width) * 0.34));
+  }
+
+  .action-button-menu {
+    left: 50%;
+    right: auto;
+    bottom: var(--ui-safe-bottom);
+    width: min(340px, calc(var(--artboard-width) - 36px));
+  }
+
+  .parent-controls {
+    top: var(--ui-safe-top);
+    right: var(--ui-safe-right);
+  }
+
+  .map-icon-button {
+    right: calc(var(--ui-safe-right) - 2px);
+    bottom: calc(var(--ui-safe-bottom) + 8px);
+    width: 96px;
+    height: 96px;
+  }
+
+  .map-puzzle-surface {
+    width: min(calc(var(--artboard-width) * 0.72), var(--artboard-height));
+    max-height: calc(var(--artboard-height) * 0.88);
+  }
+
+  .map-puzzle-close {
+    top: calc(var(--ui-safe-top) + 4px);
+    right: var(--ui-safe-right);
+  }
+
+  .cutscene-caption {
+    left: var(--ui-safe-left);
+    bottom: calc(var(--ui-safe-bottom) + 12px);
+    width: min(720px, calc(var(--artboard-width) - 48px));
+  }
+
+  .cutscene-skip {
+    right: var(--ui-safe-right);
+    bottom: calc(var(--ui-safe-bottom) + 12px);
   }
 }
 
