@@ -1,5 +1,5 @@
-.godot/
 .DS_Store
-build/
-*.tmp
 *.log
+
+web-app/node_modules/
+web-app/dist/
