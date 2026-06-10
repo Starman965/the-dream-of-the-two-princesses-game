@@ -6,6 +6,8 @@ Interactive story web app for Naomi's book, **The Two Princesses**.
 
 [Play the game in your browser](https://starman965.github.io/the-dream-of-the-two-princesses-game/)
 
+After the first deploy, enable GitHub Pages in the repo: **Settings → Pages → Build and deployment → Deploy from branch → `gh-pages` / `/ (root)`**.
+
 ## Run Locally
 
 ```bash
