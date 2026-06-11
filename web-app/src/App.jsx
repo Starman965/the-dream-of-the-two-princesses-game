@@ -12,6 +12,8 @@ import {
 } from './storyAudio'
 import { STORY_VIDEOS } from './storyVideo'
 import MapPuzzle from './MapPuzzle'
+import DragOffer from './DragOffer'
+import WishSparkle from './WishSparkle'
 
 const DREAM_SYMBOLS = ['castle', 'mirror', 'dragon', 'bear', 'witch', 'key', 'moon', 'stars']
 
@@ -115,6 +117,7 @@ function App() {
   const [mapPuzzleHint, setMapPuzzleHint] = useState('')
   const [mapOpen, setMapOpen] = useState(false)
   const [kenBurns, setKenBurns] = useState(null)
+  const [wishSparkleActive, setWishSparkleActive] = useState(false)
   const transitionTimers = useRef([])
   const cutsceneVideoRef = useRef(null)
   const sceneVideoRef = useRef(null)
@@ -131,7 +134,10 @@ function App() {
   const isTitleCardScene = isMenuScene || isEndScreen
   const isFinalScene = currentScene === STORY.length - 1
   const hasMapAccess = Boolean(scene.mapAccess)
-  const requiresTap = Boolean(activeTarget) || (hasMapAccess && !solved)
+  const dragOffer = scene.dragOffer
+  const useDragOffer = Boolean(dragOffer?.rockImage)
+  const requiresTap =
+    useDragOffer || Boolean(activeTarget) || (hasMapAccess && !solved)
   const advancesOnTap = Boolean(scene.advanceOnTap)
   const transitionActive =
     dreamTransitionActive ||
@@ -208,6 +214,7 @@ function App() {
     setMapPuzzleHint('')
     setMapOpen(false)
     setKenBurns(null)
+    setWishSparkleActive(false)
     resetTapVideoAudio()
 
     if (playIntro && nextScene.introVideo && STORY_VIDEOS[nextScene.introVideo]) {
@@ -244,6 +251,79 @@ function App() {
     if (scene.tapAudioCarryToNextScene) {
       carriedTapAudioActive.current = true
     }
+  }
+
+  function completePlannedAdvance() {
+    if (scene.backgroundFadeOutMs && (scene.backgroundAudio || scene.backgroundAudioSet)) {
+      fadeOutBackgroundSound(scene.backgroundFadeOutMs)
+    }
+
+    if (scene.advanceDelay) {
+      setSequenceLocked(true)
+
+      const advanceTimer = setTimeout(() => {
+        if (scene.advanceVideo && STORY_VIDEOS[scene.advanceVideo]) {
+          videoPurpose.current = 'advance'
+          advancingFromVideo.current = false
+          setActiveVideoId(scene.advanceVideo)
+          setVideoTransitionActive(true)
+          return
+        }
+
+        if (scene.advanceTransition === 'dissolve') {
+          startDissolveTransition()
+          return
+        }
+
+        if (scene.advanceTransition === 'fadeToBlack') {
+          startFadeToBlackHandoff(() => {
+            loadScene(currentScene + 1)
+          })
+          return
+        }
+
+        loadScene(currentScene + 1)
+      }, scene.advanceDelay)
+
+      transitionTimers.current = [advanceTimer]
+      return
+    }
+
+    if (scene.advanceTransition === 'fadeToBlack') {
+      setSequenceLocked(true)
+      startFadeToBlackHandoff(() => {
+        loadScene(currentScene + 1)
+      })
+      return
+    }
+
+    if (scene.advanceTransition === 'dissolve') {
+      setSequenceLocked(true)
+      startDissolveTransition({ duration: scene.transitionDuration })
+      return
+    }
+
+    loadScene(currentScene + 1)
+  }
+
+  function handleDragOfferComplete() {
+    if (solved || isFinalScene || transitionActive || sequenceLocked) {
+      return
+    }
+
+    setWishSparkleActive(true)
+
+    if (scene.done) {
+      setSolved(true)
+    }
+
+    if (scene.dragOffer?.audio) {
+      playStoryAudio(scene.dragOffer.audio)
+    } else if (scene.tapAudio) {
+      playStoryAudio(scene.tapAudio)
+    }
+
+    completePlannedAdvance()
   }
 
   function handleTargetPress() {
@@ -388,54 +468,11 @@ function App() {
           originX: kenBurnsConfig.originX,
           originY: kenBurnsConfig.originY,
         })
+      } else if (scene.done) {
+        setSolved(true)
       }
 
-      if (scene.advanceDelay) {
-        setSequenceLocked(true)
-
-        const advanceTimer = setTimeout(() => {
-          if (scene.advanceVideo && STORY_VIDEOS[scene.advanceVideo]) {
-            videoPurpose.current = 'advance'
-            advancingFromVideo.current = false
-            setActiveVideoId(scene.advanceVideo)
-            setVideoTransitionActive(true)
-            return
-          }
-
-          if (scene.advanceTransition === 'dissolve') {
-            startDissolveTransition()
-            return
-          }
-
-          if (scene.advanceTransition === 'fadeToBlack') {
-            startFadeToBlackHandoff(() => {
-              loadScene(currentScene + 1)
-            })
-            return
-          }
-
-          loadScene(currentScene + 1)
-        }, scene.advanceDelay)
-
-        transitionTimers.current = [advanceTimer]
-        return
-      }
-
-      if (scene.advanceTransition === 'fadeToBlack') {
-        setSequenceLocked(true)
-        startFadeToBlackHandoff(() => {
-          loadScene(currentScene + 1)
-        })
-        return
-      }
-
-      if (scene.advanceTransition === 'dissolve') {
-        setSequenceLocked(true)
-        startDissolveTransition({ duration: scene.transitionDuration })
-        return
-      }
-
-      loadScene(currentScene + 1)
+      completePlannedAdvance()
       return
     }
 
@@ -872,6 +909,7 @@ function App() {
     setMapOpen(false)
     setMapPuzzleHint('')
     setKenBurns(null)
+    setWishSparkleActive(false)
     stopActiveSound()
     stopBackgroundSound()
     transitionTimers.current.forEach((timerId) => clearTimeout(timerId))
@@ -924,6 +962,7 @@ function App() {
           {!isFinalScene &&
             activeTarget &&
             !hasMapAccess &&
+            !useDragOffer &&
             requiresTap &&
             !solved &&
             !sequenceLocked &&
@@ -936,7 +975,22 @@ function App() {
               aria-label={sequenceTarget?.label ?? scene.task}
             />
           )}
+
+          {useDragOffer && !transitionActive && !fadeBlackHandoffActive && (
+            <DragOffer
+              rockImage={dragOffer.rockImage}
+              rockStart={dragOffer.rockStart}
+              dropTarget={dragOffer.dropTarget}
+              onComplete={handleDragOfferComplete}
+              disabled={sequenceLocked || transitionActive || wishSparkleActive}
+              placed={wishSparkleActive}
+            />
+          )}
         </div>
+
+        {wishSparkleActive && dragOffer?.dropTarget && (
+          <WishSparkle dropTarget={dragOffer.dropTarget} />
+        )}
 
         {hasMapAccess && !solved && !mapOpen && !transitionActive && (
           <button
@@ -1062,7 +1116,11 @@ function App() {
                 : mapOpen
                   ? mapPuzzleHint || scene.task
                   : sequenceTarget?.label ||
-                    (solved && !isFinalScene ? 'Nice. Tap the button to continue.' : scene.task)}
+                    (useDragOffer && dragOffer.task
+                      ? dragOffer.task
+                      : solved && !isFinalScene
+                        ? 'Nice. Tap the button to continue.'
+                        : scene.task)}
             </p>
           </article>
         )}

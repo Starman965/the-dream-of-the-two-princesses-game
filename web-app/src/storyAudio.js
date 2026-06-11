@@ -19,6 +19,8 @@ import dragonSleep2 from './assets/audio/dragon_sleep_2.mp3?url'
 import dragonSleep3 from './assets/audio/dragon_sleep_3.mp3?url'
 import menuMusic from './assets/audio/menu_music.mp3?url'
 import audreyReunionMusic from './assets/audio/audrey_reunion_music.mp3?url'
+import forestShrineChimes from './assets/audio/forest_shrine_chimes.mp3?url'
+import wishRockPlaced from './assets/audio/wish_rock_placed.mp3?url'
 
 export const STORY_AUDIO = {
   lampOff: lampOffDream,
@@ -42,6 +44,8 @@ export const STORY_AUDIO = {
   dragonSleep3,
   menuMusic,
   audreyReunionMusic,
+  forestShrine: forestShrineChimes,
+  wishRockPlaced,
 }
 
 let activeSound = null

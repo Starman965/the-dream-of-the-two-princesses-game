@@ -5,6 +5,8 @@ import arrivalEnchantedLand from './assets/full_story/04_arrival_enchanted_land.
 import animalFriends from './assets/full_story/08_animal_friends.png'
 import castleNoDoor from './assets/full_story/09_castle_no_door.png'
 import forestEntrance from './assets/full_story/10_forest_entrance.png'
+import forestBuddhaShrine from './assets/full_story/forest_buddha_shrine.png'
+import wishRock from './assets/full_story/wish_rock.png'
 import deepForest from './assets/full_story/11_deep_forest.png'
 import forestMap from './assets/full_story/forest_map.png'
 import witchHouse from './assets/full_story/12_witch_house.png'
@@ -95,7 +97,7 @@ export const STORY = [
   {
     image: audreyGone,
     title: 'Where is Audrey?',
-    body: 'But when the sun rose the next morning, something strange had happened. When Emily woke up and opened her eyes, she looked at the other side of the bed. Audrey was gone. Emily sat up and looked around the room. Everything was quiet—until something sparkled on the floor. She slid out of bed and tiptoed over.',
+    body: 'But when the sun rose the next morning, something strange had happened. When Emily woke up and opened her eyes, she looked at the other side of the bed. Audrey was gone. Emily sat up and looked around the room. Everything was quiet—until something sparkled on the floor.',
     task: 'Get the magic mirror and look inside.',
     imagePosition: 'center bottom',
     advanceOnTap: true,
@@ -107,7 +109,7 @@ export const STORY = [
   {
     image: emilyTransport,
     title: 'What is this Mirror?',
-    body: 'Emily picked up the mirror and said, “Where is Audrey?” Something happened. The mirror shimmered. Then, with a rush of wind and a swirl of light—WHOOSH!—Emily was swept away! She spun through sparkling clouds, floating stars, and beautiful colors.',
+    body: 'Emily picked up the mirror and said, “Where is Audrey?” Something happened. The mirror shimmered and happy music started playing. Inside the mirror, Emily saw a castle and a path leading to it.',
     task: 'Touch the castle in the mirror to start your adventure.',
     advanceOnTap: true,
     transition: 'video',
@@ -120,7 +122,7 @@ export const STORY = [
   {
     image: arrivalEnchantedLand,
     title: 'The Enchanted Land',
-    body: 'Suddenly, Emily landed in a magical enchanted land. Rolling meadows stretched out before her. Wildflowers danced in the wind. A silver stream trickled through the hills, and in the distance, high atop a mountain, stood a castle made of white stone with a blue roof. Its tallest tower touched the clouds. Emily began to walk down the path toward the castle.',
+    body: 'Suddenly, Emily was whooshed away to a magical enchanted land. Rolling meadows stretched out before her. Wildflowers danced in the wind. A silver stream trickled through the hills, and in the distance, high atop a mountain, stood a castle made of white stone with a blue roof. Its tallest tower touched the clouds. Emily decided to walk down the path toward the castle.',
     task: 'Tap the path to walk toward the castle.',
     panelPosition: 'bottom-left',
     advanceOnTap: true,
@@ -132,7 +134,7 @@ export const STORY = [
   {
     image: animalFriends,
     title: 'New Friends',
-    body: 'Along the way, Emily met the silliest, sweetest group of animals. There was a small yellow bear who loved honey, a gloomy gray donkey who sighed a lot, and a bouncy white rabbit with ears that didn’t quite match. They looked at Emily with big, curious eyes. “Have you seen my sister Audrey?” Emily asked. The bear licked honey off his paw and said, “We think… she was taken.” The donkey nodded. “By the witch,” he muttered. “The witch in the Great Forest,” said the rabbit, twitching his nose. “She locked Audrey up in the tower at the top of the mountain.” Emily looked up at the enormous castle. The wind blew. Her pink dress sparkled in the sun. She clenched the magic mirror close to her heart and said, “Then we have to rescue her.”',
+    body: 'Along the way, Emily met the silliest, sweetest group of animals. There was a small yellow bear who loved honey, a gloomy gray donkey who sighed a lot, and a bouncy white rabbit with ears that didn’t quite match. They looked at Emily with big, curious eyes. Emily told them she was looking for her sister Audrey.',
     task: 'Tap each new friend to hear them talk.',
     panelPosition: 'top-right',
     introVideo: 'emilyMeetsFriends',
@@ -162,7 +164,7 @@ export const STORY = [
   {
     image: castleNoDoor,
     title: 'How to Get In?',
-    body: 'Emily and her new animal friends set off across the hills toward the tall white castle. The path twisted through flower-filled meadows and glittering streams. When they reached the castle, they crossed the wide wooden drawbridge—but something was wrong. There was no door. No stairs. No way to get to the tower at the top. Emily searched every wall and every stone, but there seemed to be no way into the castle. “How can we rescue Audrey if we can’t even get inside?” Emily asked. The little yellow bear rubbed his belly and said, “There’s a legend about two flying dragons hidden deep in the Great Forest. Maybe they can help.”',
+    body: 'Emily and her new animal friends set off across the hills toward the tall white castle. The path twisted through flower-filled meadows and glittering streams. When they reached the castle, they crossed the wide wooden drawbridge—but something was wrong. There was no door. No stairs. No way to get to the tower at the top. Emily searched every wall and every stone, but there seemed to be no way into the castle. “How can we rescue Audrey if we can’t even get inside?” Emily asked. he little yellow bear rubbed his belly and said, “There’s a legend about two flying dragons hidden deep in the Great Forest. Maybe they can help.”',
     task: 'Tap the tower balcony.',
     panelPosition: 'bottom-left',
     advanceOnTap: true,
@@ -193,7 +195,7 @@ export const STORY = [
         youAreHere: { x: 75, y: 50, offsetX: 55, offsetY: -92 },
         youAreHereLabel: 'You are here',
         destination: { x: 55, y: 74, offsetY: -375, hitRadius: 9 },
-        destinationLabel: 'Forest path',
+        destinationLabel: 'Magical Buddha',
       },
       zones: [
         {
@@ -220,6 +222,27 @@ export const STORY = [
       ],
     },
     done: 'Emily traced the path with her finger. “This way into the Great Forest,” she said bravely.',
+  },
+  {
+    image: forestBuddhaShrine,
+    title: 'A Forest Shrine',
+    body: 'Deeper into the Great Forest, Emily and her friends found a quiet clearing. A stone Buddha glowed softly beside a peaceful frog statue. The animals fell silent as Emily stepped toward the shining statue.',
+    task: 'Tap the rock, then tap the Buddha to make a wish.',
+    panelPosition: 'bottom-left',
+    advanceOnTap: true,
+    advanceDelay: 3500,
+    advanceTransition: 'fadeToBlack',
+    waitingTask: 'A wish drifts through the forest...',
+    target: { x: 665, y: 265, width: 100, height: 100 },
+    dragOffer: {
+      rockImage: wishRock,
+      audio: 'wishRockPlaced',
+      task: 'Tap the rock, then tap the Buddha to make a wish.',
+      rockStart: { x: 425, y: 395, width: 105, height: 105 },
+      dropTarget: { x: 665, y: 265, width: 100, height: 100 },
+    },
+    sceneAudio: 'forestShrine',
+    done: 'Emily closed her eyes and whispered, “Please help me find my sister Audrey.”',
   },
   {
     image: deepForest,
